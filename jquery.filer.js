@@ -1,41 +1,98 @@
 /**
- * Custom file upload inputs
+ * Custom file upload inputs.
  *
  * @version: 0.1.0
  * @license: MIT
  * @author: rumenpetrow@gmail.com
  * @dependancies:
  * - jQuery - https://jquery.com/
- * - UMD (Universal Module Definition) patterns for JavaScript modules that work everywhere. - https://github.com/umdjs/umd/blob/master/templates/jqueryPlugin.js
  */
-(function (factory) {
-	if (typeof define === 'function' && define.amd) {
-		// AMD. Register as an anonymous module.
-		define(['jquery'], factory);
-	} else if (typeof module === 'object' && module.exports) {
-		// Node/CommonJS
-		module.exports = function( root, jQuery ) {
+(function($, window, document, undefined) {
+	'use strict';
 
-		if ( jQuery === undefined ) {
-			// require('jQuery') returns a factory that requires window to
-			// build a jQuery instance, we normalize how we use modules
-			// that require this pattern but the window provided is a noop
-			// if it's defined (how jquery works)
-			if ( typeof window !== 'undefined' ) {
-				jQuery = require('jquery');
-			} else {
-				jQuery = require('jquery')(root);
+	var pluginName = 'filer';
+
+	function Filer(element, options) {
+		this.initialize(element, options);
+	};
+
+	Filer.prototype = {
+		defaults: {},
+		options: {},
+		$input: null,
+		$holder: null,
+		$inputDummy: null,
+		placeholder: '',
+		initialize: function(element, options) {
+			var self = this;
+			
+			self.options = $.extend(true, {}, self.defaults, options);
+
+			// self.validateInput();
+			self.cacheConfig(element, options);
+		},
+		validateInput: function() {
+			var self = this;
+
+			if (!self.options.$input.length) {
+				console.error(pluginName + ': Element missing!');
+				console.error(pluginName + ': Stop execution!');
 			}
+
+			if (self.options.$input.length > 1) {
+				console.error(pluginName + ': Multiple elements detected!');
+				console.error(pluginName + ': Stop execution!');
+			}
+
+			self.cacheConfig();
+		},
+		cacheConfig: function(element, options) {
+			var self = this;
+
+			self.$input = $(element);
+
+			if (self.$input.attr('placeholder')) {
+				self.placeholder = self.$input.attr('placeholder');
+			}
+
+			if (!self.$input.attr('data-filer')) {
+				self.buildMarkup();
+				self.$input.data('filer', self);
+			} else {
+				// already exist
+			}
+		},
+		buildMarkup: function() {
+			var self = this;
+
+			self.$input.wrap('<div class="filer-wrap">');
+
+			self.$holder = self.$input.closest('.filer-wrap');
+
+			self.$holder.append('<input type="text" class="filer-dummy" placeholder="'+ self.placeholder +'" disabled="disabled" />');
+
+			self.$inputDummy = self.$holder.find('input[type="text"]');
+
+			self.bindEvents();
+		},
+		bindEvents: function() {
+			var self = this;
+
+			self.$input.on('change', function() {
+				self.upload(this);
+			});
+		},
+		upload: function(element) {
+			var self = this;
+			var value = $(element).val() ? element.files[0].name : '';
+
+			self.$inputDummy.val(value);
 		}
+	};
 
-		factory(jQuery);
-
-		return jQuery;
-		};
-	} else {
-		// Browser globals
-		factory(jQuery);
+	$.fn.filer = function(options) {
+		this.each(function() {
+			new Filer(this, options);
+		});
 	}
-}(function ($) {
-	$.fn.filer = function () { console.log('Hello Filer!'); };
-}));
+})(jQuery, window, document);
