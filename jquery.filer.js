@@ -24,56 +24,31 @@
 		$inputDummy: null,
 		placeholder: '',
 		initialize: function(element, options) {
-			var self = this;
-			
-			self.options = $.extend(true, {}, self.defaults, options);
+			this.options = $.extend(true, {}, this.defaults, options);
 
-			// self.validateInput();
-			self.cacheConfig(element, options);
-		},
-		validateInput: function() {
-			var self = this;
-
-			if (!self.options.$input.length) {
-				console.error(pluginName + ': Element missing!');
-				console.error(pluginName + ': Stop execution!');
-			}
-
-			if (self.options.$input.length > 1) {
-				console.error(pluginName + ': Multiple elements detected!');
-				console.error(pluginName + ': Stop execution!');
-			}
-
-			self.cacheConfig();
+			this.cacheConfig(element, options);
 		},
 		cacheConfig: function(element, options) {
-			var self = this;
+			this.$input = $(element);
 
-			self.$input = $(element);
-
-			if (self.$input.attr('placeholder')) {
-				self.placeholder = self.$input.attr('placeholder');
+			if (this.$input.attr('placeholder')) {
+				this.placeholder = this.$input.attr('placeholder');
 			}
 
-			if (!self.$input.attr('data-filer')) {
-				self.buildMarkup();
-				self.$input.data('filer', self);
-			} else {
-				// already exist
+			if (!this.$input.attr('data-filer')) {
+				this.buildMarkup();
 			}
 		},
 		buildMarkup: function() {
-			var self = this;
+			this.$input.wrap('<div class="filer-wrap">');
 
-			self.$input.wrap('<div class="filer-wrap">');
+			this.$holder = this.$input.closest('.filer-wrap');
 
-			self.$holder = self.$input.closest('.filer-wrap');
+			this.$holder.append('<input type="text" class="filer-dummy" placeholder="'+ this.placeholder +'" />');
 
-			self.$holder.append('<input type="text" class="filer-dummy" placeholder="'+ self.placeholder +'" disabled="disabled" />');
+			this.$inputDummy = this.$holder.find('input[type="text"]');
 
-			self.$inputDummy = self.$holder.find('input[type="text"]');
-
-			self.bindEvents();
+			this.bindEvents();
 		},
 		bindEvents: function() {
 			var self = this;
@@ -83,16 +58,24 @@
 			});
 		},
 		upload: function(element) {
-			var self = this;
-			var value = $(element).val() ? element.files[0].name : '';
+			var value = '';
 
-			self.$inputDummy.val(value);
+			if ($(element).val()) {
+				for (var i = 0; i < element.files.length; i++) {
+					value = i > 0 ? value + ', ' + element.files[i].name : element.files[i].name
+				};
+			}
+
+			this.$inputDummy.val(value);
 		}
 	};
 
 	$.fn.filer = function(options) {
-		this.each(function() {
-			new Filer(this, options);
+		return this.each(function() {
+			if (!$.data(this, pluginName)) {
+				$.data(this, pluginName, 
+					new Filer(this, options));
+			}
 		});
 	}
 })(jQuery, window, document);
