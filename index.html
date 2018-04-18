@@ -10,6 +10,7 @@
 <div class="container">
 	<h1>Hello Filer!</h1>
 
+	<input type="file" />
 	<input type="file" placeholder="Upload Single" />
 	<input type="file" placeholder="Upload Multi" multiple />
 </div>
@@ -17,7 +18,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="jquery.filer.js"></script>
 <script>
-	$('input[type="file"]').filer();
+	// Example usage:
+	$('input[type="file"]').filer({
+		onTemp: function() {
+			console.log('hi form html');
+		}
+	});
 </script>
 </body>
 </html>

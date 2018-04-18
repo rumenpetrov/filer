@@ -1,3 +1,4 @@
 .filer-wrap { position: relative; }
+.filer-wrap input { width: 100%; }
 .filer-wrap input[type="file"] { opacity: 0; }
 .filer-wrap .filer-dummy { position: absolute; top: 0; left: 0; pointer-events: none; }

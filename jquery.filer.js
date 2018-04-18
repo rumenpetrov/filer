@@ -1,38 +1,58 @@
 /**
  * Custom file upload inputs.
  *
- * @version: 0.1.0
+ * @version: 0.1.1
  * @license: MIT
  * @author: rumenpetrow@gmail.com
  * @dependancies:
  * - jQuery - https://jquery.com/
+ * @todo:
+ * - Add upload button.
+ * - Add destroy function.
+ * - Add methods, callbacks and custom events.
+ * - Refactor events unbinding function.
  */
 (function($, window, document, undefined) {
 	'use strict';
 
 	var pluginName = 'filer';
 
-	function Filer(element, options) {
-		this.initialize(element, options);
+	/**
+	 * Plugin constructor.
+	 * 
+	 * @param {Object} element  Current input field.
+	 * @param {Object} settings Plugin settings.
+	 */
+	function Filer(element, settings) {
+		this.initialize(element, settings);
 	};
 
 	Filer.prototype = {
-		defaults: {},
-		options: {},
+		/**
+		 * Default Settings.
+		 * 
+		 * @type {String} placeholder Initial placeholder text if placeholder attribute is not provided.
+		 */
+		defaults: {
+			placeholder: 'No file chosen'
+		},
+		settings: {},
 		$input: null,
 		$holder: null,
 		$inputDummy: null,
-		placeholder: '',
-		initialize: function(element, options) {
-			this.options = $.extend(true, {}, this.defaults, options);
+		placeholder: null,
+		initialize: function(element, settings) {
+			this.settings = $.extend(true, {}, this.defaults, settings);
 
-			this.cacheConfig(element, options);
+			this.cacheConfig(element, this.settings);
 		},
-		cacheConfig: function(element, options) {
+		cacheConfig: function(element, settings) {
 			this.$input = $(element);
 
 			if (this.$input.attr('placeholder')) {
 				this.placeholder = this.$input.attr('placeholder');
+			} else {
+				this.placeholder = settings.placeholder;
 			}
 
 			if (!this.$input.attr('data-filer')) {
@@ -57,6 +77,9 @@
 				self.upload(this);
 			});
 		},
+		unbindEvents: function() {
+			this.$input.off('change');
+		},
 		upload: function(element) {
 			var value = '';
 
@@ -70,11 +93,17 @@
 		}
 	};
 
-	$.fn.filer = function(options) {
+	/**
+	 * Export filer to jQuery namespace.
+	 * 
+	 * @param  {Object} settings The settings of the constructor.
+	 * @return {Object}          New Filer instance.
+	 */
+	$.fn.filer = function(settings) {
 		return this.each(function() {
 			if (!$.data(this, pluginName)) {
 				$.data(this, pluginName, 
-					new Filer(this, options));
+					new Filer(this, settings));
 			}
 		});
 	}
